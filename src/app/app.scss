@@ -1,0 +1,83 @@
+/* Algemene stijl reset en achtergrond */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #e5ddd5;
+  /* WhatsApp-achtig beige/groen */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+/* Main container */
+.chat-container {
+  width: 75%;
+  background-color: #ffffff;
+  margin-top: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Message container */
+.message-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  width: 100%;
+}
+
+/* Berichten */
+.message-response,
+.message-request {
+  max-width: 60%;
+  padding: 0.75rem 1rem;
+  border-radius: 18px;
+  word-wrap: break-word;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.message-response {
+  align-self: flex-start;
+  background-color: #f0f0f0;
+  color: #000;
+  border-top-left-radius: 0;
+  font-size: 1.5rem;
+  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+
+.message-request {
+  align-self: flex-end;
+  background-color: #dcf8c6;
+  color: #000;
+  border-top-right-radius: 0;
+  font-size: 1.5rem;
+  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+
+/* Bottom container */
+.bottom-container {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid #ddd;
+  gap: 0.5rem;
+}
+
+/* PrimeNG componenten */
+.bottom-container ::ng-deep textarea {
+  flex: 1;
+  resize: none;
+  min-height: 40px;
+  max-height: 120px;
+  padding: 2rem;
+  border: 1px solid #ccc;
+  font-size: 1.5rem;
+  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
