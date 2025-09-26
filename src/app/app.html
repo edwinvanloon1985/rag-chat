@@ -1,20 +1,25 @@
-<div class="chat-container">
-  @if (messages.length) {
-  <div class="message-container">
-    @for (m of messages; track m.id) {
-    @if (m.role === 'bot') {
-    <div class="message-response">{{m.text}}</div>
-    }
-    @if (m.role === 'user') {
-    <div class="message-request">{{m.text}}</div>
-    }
-    }
-  </div>
-  }
+<div class="chat-container" [class.is-empty]="!messages.length">
+    <div class="message-container">
+        @if (messages.length) {
+            @for (m of messages; track m.id) {
+                @if (m.role === 'bot') {
+                    <div class="message-response"><markdown [data]="m.content"></markdown></div>
+                }
+                @if (m.role === 'user') {
+                    <div class="message-request"><markdown [data]="m.content"></markdown></div>
+                }
+            }
+        }
+    </div>
 
-  <div class="bottom-container">
-    <textarea rows="3" pTextarea [(ngModel)]="chatMessage" (keydown.enter)="sendMessage(); $event.preventDefault()"
-      placeholder="Type a message…">
-    </textarea>
-  </div>
+    <div class="bottom-container">
+    <textarea
+            rows="1"
+            pTextarea
+            [(ngModel)]="userMessage"
+            (keydown.enter)="sendMessage(); $event.preventDefault()"
+            placeholder="Stel een vraag…"
+            class="chat-input"
+    ></textarea>
+    </div>
 </div>

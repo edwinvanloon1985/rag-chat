@@ -1,47 +1,91 @@
-import { Component } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { TextareaModule } from 'primeng/textarea';
-import { ButtonModule } from 'primeng/button';
-import { Observable } from 'rxjs';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
+import {Component, OnDestroy, OnInit} from '@angular/core';
+import {FormsModule} from '@angular/forms';
+import {TextareaModule} from 'primeng/textarea';
+import {Subscription} from 'rxjs';
+import {MarkdownComponent} from "ngx-markdown";
+import {ChatSocketService} from "./service/chat-socket.service";
 
 type Role = 'user' | 'bot';
-interface ChatMsg { id: number; role: Role; text: string; }
-interface ChatResponse { message: string }
-interface ChatRequest { message: string }
+
+interface ChatMessage {
+    id: string;
+    role: Role;
+    content: string;
+    done: boolean
+}
 
 @Component({
-  selector: 'app-root',
-  standalone: true,
-  imports: [FormsModule, TextareaModule, ButtonModule],
-  templateUrl: './app.html',
-  styleUrls: ['./app.scss']
+    selector: 'app-root',
+    standalone: true,
+    imports: [FormsModule, TextareaModule, MarkdownComponent],
+    templateUrl: './app.html',
+    styleUrls: ['./app.scss']
 })
-export class App {
-  chatMessage = '';
-  private nextId = 1;
-  messages: ChatMsg[] = [];
+export class App implements OnInit, OnDestroy {
+    private subscription?: Subscription;
+    private chatMessageMap = new Map<string, ChatMessage>();
 
-  constructor(private httpClient: HttpClient) { }
+    userMessage = '';
+    messages: ChatMessage[] = [];
 
-  sendMessage() {
-    const text = this.chatMessage.trim();
-    if (!text) return;
-    this.messages.push({ id: this.nextId++, role: 'user', text });
-    this.chatMessage = '';
+    constructor(private chatSocketService: ChatSocketService) {
+    }
 
-    setTimeout(() => {
-      this.callAi(text).subscribe((response) => {
+    ngOnInit(): void {
+        this.subscription = this.chatSocketService
+            .connect()
+            .subscribe(evt => this.handleIncomingMessage(evt));
+    }
+
+    ngOnDestroy(): void {
+        this.subscription?.unsubscribe();
+        this.chatSocketService.close();
+    }
+
+    protected handleIncomingMessage(response: {
+        type: 'delta' | 'done' | 'text';
+        id?: string;
+        content?: string
+    }): void {
+        if (response.type === 'text' || !response.type) {
+            const msg: ChatMessage = {
+                id: crypto.randomUUID(),
+                content: response.content ?? '',
+                role: 'bot',
+                done: true
+            };
+            this.messages.push(msg);
+            return;
+        }
+
+        if (!response.id) return;
+
+        let msg = this.chatMessageMap.get(response.id);
+        if (!msg) {
+            msg = {id: response.id, content: '', role: 'bot', done: false};
+            this.chatMessageMap.set(response.id, msg);
+            this.messages.push(msg);
+        }
+
+        if (response.type === 'delta') {
+            msg.content += (response.content ?? ''); // behoud spaties van tokens
+        } else if (response.type === 'done') {
+            msg.done = true;
+        }
+    }
+
+    sendMessage(): void {
+        const text = this.userMessage.trim();
+        if (!text) return;
+
+        this.chatSocketService.send(text);
         this.messages.push({
-          id: this.nextId++,
-          role: 'bot',
-          text: response.message
+            id: crypto.randomUUID(),
+            role: 'user',
+            content: text,
+            done: true
         });
-      });
-    }, 300);
-  }
 
-  callAi(message: string): Observable<ChatResponse> {
-    return this.httpClient.post<ChatResponse>('http://localhost:8080/chat', { message });
-  }
+        this.userMessage = '';
+    }
 }

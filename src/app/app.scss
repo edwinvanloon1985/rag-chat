@@ -1,83 +1,101 @@
-/* Algemene stijl reset en achtergrond */
-body {
+html, body {
+  min-height: 100%;
+  height: 100%;
   margin: 0;
   padding: 0;
-  font-family: 'Segoe UI', sans-serif;
-  background-color: #e5ddd5;
-  /* WhatsApp-achtig beige/groen */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-}
-
-/* Main container */
-.chat-container {
-  width: 75%;
-  background-color: #ffffff;
-  margin-top: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  display: flex;
-  flex-direction: column;
   overflow: hidden;
 }
 
-/* Message container */
+.chat-container {
+  min-height: 90svh;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-container > * {
+  width: min(75%, 1100px);
+  margin: 0 auto;
+}
+
 .message-container {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 1rem;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  padding: 1rem;
-  width: 100%;
 }
 
-/* Berichten */
 .message-response,
 .message-request {
-  max-width: 60%;
+  max-width: 70%;
   padding: 0.75rem 1rem;
-  border-radius: 18px;
+  border-radius: 10px;
   word-wrap: break-word;
-  font-size: 0.95rem;
-  line-height: 1.4;
+  font-size: 1rem;
+  font-family: 'Lucida Sans','Lucida Sans Regular','Lucida Grande','Lucida Sans Unicode',Geneva,Verdana,sans-serif;
+  color: #404040;
+  line-height: 1.5;
 }
 
 .message-response {
   align-self: flex-start;
-  background-color: #f0f0f0;
-  color: #000;
   border-top-left-radius: 0;
-  font-size: 1.5rem;
-  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
 }
 
 .message-request {
   align-self: flex-end;
-  background-color: #dcf8c6;
-  color: #000;
+  background: #f2f2f2;
   border-top-right-radius: 0;
-  font-size: 1.5rem;
-  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
 }
 
-/* Bottom container */
 .bottom-container {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  padding: .75rem max(1rem, env(safe-area-inset-right))
+  max(.75rem, env(safe-area-inset-bottom))
+  max(1rem, env(safe-area-inset-left));
   display: flex;
-  align-items: center;
-  padding: 0.75rem 1rem;
-  border-top: 1px solid #ddd;
-  gap: 0.5rem;
+  align-items: flex-end;
 }
 
-/* PrimeNG componenten */
-.bottom-container ::ng-deep textarea {
+.bottom-container ::ng-deep textarea.chat-input {
   flex: 1;
   resize: none;
-  min-height: 40px;
-  max-height: 120px;
-  padding: 2rem;
-  border: 1px solid #ccc;
-  font-size: 1.5rem;
-  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+  overflow: hidden;
+  max-height: 40dvh;
+  padding: 1.5rem;
+  font-size: 1rem;
+  line-height: 1.4;
+  border-radius: 25px;
+  border: 1px solid #cccccc;
+  outline: none;
+  color: #404040;
+  background: #f2f2f2;
+  font-family: 'Lucida Sans','Lucida Sans Regular','Lucida Grande','Lucida Sans Unicode',Geneva,Verdana,sans-serif;
+}
+
+.bottom-container ::ng-deep textarea.chat-input:focus {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79,70,229,.25);
+}
+
+.chat-container.is-empty {
+  justify-content: center;
+}
+
+.chat-container.is-empty .message-container {
+  display: none;
+}
+
+.chat-container.is-empty .bottom-container {
+  position: static;
+  bottom: auto;
+  border-top: none;
+  backdrop-filter: none;
+  padding-bottom: 0;
+  margin: 10vh auto 14vh;
+  width: 100%;
+  max-width: 900px;
 }
