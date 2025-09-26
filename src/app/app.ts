@@ -1,9 +1,10 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, ElementRef, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {TextareaModule} from 'primeng/textarea';
 import {Subscription} from 'rxjs';
 import {MarkdownComponent} from "ngx-markdown";
 import {ChatSocketService} from "./service/chat-socket.service";
+import {AutoScrollToBottomDirective} from "./directive/auto-scroll.directive";
 
 type Role = 'user' | 'bot';
 
@@ -17,7 +18,7 @@ interface ChatMessage {
 @Component({
     selector: 'app-root',
     standalone: true,
-    imports: [FormsModule, TextareaModule, MarkdownComponent],
+    imports: [FormsModule, TextareaModule, MarkdownComponent, AutoScrollToBottomDirective],
     templateUrl: './app.html',
     styleUrls: ['./app.scss']
 })

@@ -18,12 +18,21 @@ html, body {
 }
 
 .message-container {
+  min-height: 0;
   flex: 1 1 auto;
   overflow-y: auto;
+  overflow-anchor: none;
   padding: 1rem;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  scrollbar-gutter: stable;
+  scroll-behavior: smooth;
+}
+
+.message-container > .scroll-anchor {
+  height: 1px;
+  overflow-anchor: auto;
 }
 
 .message-response,
