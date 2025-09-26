@@ -1,0 +1,60 @@
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .75rem;
+  border-top: 1px solid #cccccc;
+}
+
+.btn {
+  padding: .25rem .5rem;
+  border: 1px solid #ccc;
+  background: #fafafa;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.thread-list {
+  overflow: auto;
+}
+
+.thread-item {
+  padding: .5rem .75rem;
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: .5rem;
+  align-items: center;
+  border-bottom: 1px solid #f3f3f3;
+  font-family: 'Lucida Sans','Lucida Sans Regular','Lucida Grande','Lucida Sans Unicode',Geneva,Verdana,sans-serif;
+  font-size: .75rem;
+  color: #404040;
+}
+
+.thread-item .title {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.thread-item .meta {
+  opacity: .7;
+}
+
+.thread-item .actions .icon {
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  padding: 0 .25rem;
+}
+
+.thread-item.active {
+  background: #f5f7fb;
+}

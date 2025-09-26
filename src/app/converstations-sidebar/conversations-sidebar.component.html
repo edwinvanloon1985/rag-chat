@@ -1,0 +1,25 @@
+<div class="sidebar">
+    <div class="sidebar-header">
+        <button class="btn" (click)="newThread.emit()">+ Nieuw</button>
+    </div>
+
+    <div class="thread-list">
+        @for (t of threads; track t.threadId) {
+            <div
+                    class="thread-item"
+                    [class.active]="t.threadId === activeThreadId"
+                    (click)="onOpen(t.threadId)"
+                    [title]="t.threadId"
+            >
+                <div class="title">{{ t.title || 'Naamloos gesprek' }}</div>
+                <div class="meta">{{ t.updatedAt | date:'short' }}</div>
+                <div class="actions" (click)="$event.stopPropagation()">
+                    <button class="icon" title="Hernoemen" (click)="onRename(t.threadId)">✎</button>
+                    <button class="icon" title="Verwijderen" (click)="onDelete(t.threadId)">🗑</button>
+                </div>
+            </div>
+        } @empty {
+            <div class="thread-item empty" style="opacity:.7; padding: .75rem">Nog geen gesprekken</div>
+        }
+    </div>
+</div>
