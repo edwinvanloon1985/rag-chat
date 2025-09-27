@@ -25,9 +25,7 @@ import {ConversationsSidebarComponent, ThreadBrief} from "./converstations-sideb
 export class App implements OnInit, OnDestroy {
     private subscription?: Subscription;
     private chatMessageMap = new Map<string, ChatMessage>();
-
-    private readonly threadId = crypto.randomUUID();
-    private hasRenamedThread = false; // titel na 1e user-bericht hernoemen
+    private hasRenamedThread = false;
 
     threads: ThreadBrief[] = [];
     activeThreadId: string = localStorage.getItem('activeThreadId') ?? crypto.randomUUID();
@@ -38,12 +36,11 @@ export class App implements OnInit, OnDestroy {
     constructor(
         private chatSocketService: ChatSocketService,
         private chatStore: ChatStoreService
-    ) {
-    }
+    ) {}
 
     ngOnInit(): void {
         this.refreshThreads().then(async () => {
-            await this.openThread(this.activeThreadId, {createIfMissing: true});
+            await this.openThread(this.activeThreadId, { createIfMissing: true });
 
             this.subscription = this.chatSocketService
                 .connect()
@@ -64,7 +61,7 @@ export class App implements OnInit, OnDestroy {
 
     async startNewThread() {
         const newId = crypto.randomUUID();
-        await this.openThread(newId, {createIfMissing: true});
+        await this.openThread(newId, { createIfMissing: true });
         await this.refreshThreads();
     }
 
@@ -72,17 +69,22 @@ export class App implements OnInit, OnDestroy {
         this.activeThreadId = threadId;
         localStorage.setItem('activeThreadId', threadId);
 
+        this.chatMessageMap.clear();
+
         const t = await this.chatStore.getThread(threadId);
         if (!t) {
-            if (opts.createIfMissing) {
-                this.messages = [];
-            } else {
-                this.messages = [];
-            }
+            this.messages = [];
+            this.hasRenamedThread = false;
             return;
         }
-        this.messages = t.messages.map(m => ({id: m.id, role: m.role as any, content: m.content, done: true}));
-        this.hasRenamedThread = !!t.title; // simpele heuristiek
+
+        this.messages = t.messages.map(m => ({
+            id: m.id,
+            role: m.role as any,
+            content: m.content,
+            done: true
+        }));
+        this.hasRenamedThread = !!t.title;
     }
 
     async renameThread(threadId: string) {
@@ -99,14 +101,14 @@ export class App implements OnInit, OnDestroy {
         if (threadId === this.activeThreadId) {
             const next = this.threads.find(t => t.threadId !== threadId);
             const fallback = next?.threadId ?? crypto.randomUUID();
-            await this.openThread(fallback, {createIfMissing: true});
+            await this.openThread(fallback, { createIfMissing: true });
         }
         await this.refreshThreads();
     }
 
     private async persistMessage(role: Role, content: string) {
         await this.chatStore.appendMessage(
-            this.threadId,
+            this.activeThreadId,
             {
                 id: crypto.randomUUID(),
                 role: role,
@@ -131,7 +133,7 @@ export class App implements OnInit, OnDestroy {
             };
             this.messages.push(msg);
 
-            await this.persistMessage('bot', content);
+            await this.persistMessage('bot', content); // ✅ uses activeThreadId
             return;
         }
 
@@ -139,7 +141,7 @@ export class App implements OnInit, OnDestroy {
 
         let msg = this.chatMessageMap.get(response.id);
         if (!msg) {
-            msg = {id: response.id, content: '', role: 'bot', done: false};
+            msg = { id: response.id, content: '', role: 'bot', done: false };
             this.chatMessageMap.set(response.id, msg);
             this.messages.push(msg);
         }
@@ -148,14 +150,15 @@ export class App implements OnInit, OnDestroy {
             msg.content += (response.content ?? '');
         } else if (response.type === 'done') {
             msg.done = true;
-            await this.persistMessage('bot', msg.content);
+            await this.persistMessage('bot', msg.content); // ✅ uses activeThreadId
         }
     }
 
     async sendMessage(): Promise<void> {
-        this.chatStore.getThread(this.threadId).then(thread => {
+        this.chatStore.getThread(this.activeThreadId).then(thread => {
             console.log('Thread inhoud:', thread);
         });
+
         const text = this.userMessage.trim();
         if (!text) return;
 
@@ -169,8 +172,9 @@ export class App implements OnInit, OnDestroy {
 
         if (!this.hasRenamedThread) {
             const firstLine = text.split('\n')[0].slice(0, 60);
-            await this.chatStore.renameThread(this.threadId, firstLine || 'Gesprek');
+            await this.chatStore.renameThread(this.activeThreadId, firstLine || 'Gesprek'); // ✅ active
             this.hasRenamedThread = true;
+            await this.refreshThreads();
         }
 
         this.chatSocketService.send(text);

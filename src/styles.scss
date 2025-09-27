@@ -3,17 +3,3 @@
 @media (prefers-color-scheme: dark) {
   :root, html, body { padding: 0; margin: 0; background-color: #fff !important; color-scheme: light; }
 }
-
-.top-container {
-  position: sticky;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.top-container .logo {
-  display: block;
-  height: 150px;
-  width: auto;
-  object-fit: contain;
-}

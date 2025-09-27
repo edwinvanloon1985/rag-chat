@@ -10,8 +10,12 @@
     ></app-conversations-sidebar>
 
     <main class="chat-main">
-        <div class="chat-container" [class.is-empty]="!messages.length" autoScrollToBottom>
-            <div class="message-container">
+        <div class="top-container">
+            <img src="assets/logo.png" alt="Logo" class="logo" />
+        </div>
+
+        <div class="chat-container" [class.is-empty]="!messages.length">
+            <div class="message-container" autoScrollToBottom>
                 @if (messages.length) {
                     @for (m of messages; track m.id) {
                         @if (m.role === 'bot') {
@@ -27,17 +31,17 @@
                     }
                 }
             </div>
+        </div>
 
-            <div class="bottom-container">
-                <textarea
-                        rows="1"
-                        pTextarea
-                        [(ngModel)]="userMessage"
-                        (keydown.enter)="sendMessage(); $event.preventDefault()"
-                        placeholder="Stel een vraag…"
-                        class="chat-input"
-                ></textarea>
-            </div>
+        <div class="bottom-container">
+          <textarea
+                  rows="1"
+                  pTextarea
+                  [(ngModel)]="userMessage"
+                  (keydown.enter)="sendMessage(); $event.preventDefault()"
+                  placeholder="Stel een vraag…"
+                  class="chat-input"
+          ></textarea>
         </div>
     </main>
 </div>
