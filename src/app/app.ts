@@ -1,13 +1,14 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {TextareaModule} from 'primeng/textarea';
-import {Subscription} from 'rxjs';
+import {Observable, Subscription} from 'rxjs';
 import {MarkdownComponent} from "ngx-markdown";
 import {ChatSocketService} from "./service/chat-socket.service";
 import {AutoScrollToBottomDirective} from "./directive/auto-scroll.directive";
 import {ChatMessage, Role} from "./model/chat-message.model";
 import {ChatStoreService} from "./service/chat-store.service";
 import {ConversationsSidebarComponent, ThreadBrief} from "./converstations-sidebar/conversations-sidebar.component";
+import {HttpClient} from "@angular/common/http";
 
 @Component({
     selector: 'app-root',
@@ -35,12 +36,14 @@ export class App implements OnInit, OnDestroy {
 
     constructor(
         private chatSocketService: ChatSocketService,
-        private chatStore: ChatStoreService
-    ) {}
+        private chatStore: ChatStoreService,
+        private http: HttpClient
+    ) {
+    }
 
     ngOnInit(): void {
         this.refreshThreads().then(async () => {
-            await this.openThread(this.activeThreadId, { createIfMissing: true });
+            await this.openThread(this.activeThreadId, {createIfMissing: true});
 
             this.subscription = this.chatSocketService
                 .connect()
@@ -61,7 +64,7 @@ export class App implements OnInit, OnDestroy {
 
     async startNewThread() {
         const newId = crypto.randomUUID();
-        await this.openThread(newId, { createIfMissing: true });
+        await this.openThread(newId, {createIfMissing: true});
         await this.refreshThreads();
     }
 
@@ -101,9 +104,13 @@ export class App implements OnInit, OnDestroy {
         if (threadId === this.activeThreadId) {
             const next = this.threads.find(t => t.threadId !== threadId);
             const fallback = next?.threadId ?? crypto.randomUUID();
-            await this.openThread(fallback, { createIfMissing: true });
+            await this.openThread(fallback, {createIfMissing: true});
         }
         await this.refreshThreads();
+        this.deleteChat(threadId).subscribe({
+            next: () => console.log(`Gesprek met id: ${threadId} verwijderd!`),
+            error: (err) => console.log(`Verwijderen van gesprek met id: ${threadId} mislukt!`)
+        });
     }
 
     private async persistMessage(role: Role, content: string) {
@@ -116,6 +123,10 @@ export class App implements OnInit, OnDestroy {
                 ts: Date.now(),
             }
         );
+    }
+
+    private deleteChat(id: string): Observable<void> {
+        return this.http.delete<void>(`/chat-store/${id}`);
     }
 
     protected async handleIncomingMessage(response: {
@@ -133,7 +144,7 @@ export class App implements OnInit, OnDestroy {
             };
             this.messages.push(msg);
 
-            await this.persistMessage('bot', content); // ✅ uses activeThreadId
+            await this.persistMessage('bot', content);
             return;
         }
 
@@ -141,7 +152,7 @@ export class App implements OnInit, OnDestroy {
 
         let msg = this.chatMessageMap.get(response.id);
         if (!msg) {
-            msg = { id: response.id, content: '', role: 'bot', done: false };
+            msg = {id: response.id, content: '', role: 'bot', done: false};
             this.chatMessageMap.set(response.id, msg);
             this.messages.push(msg);
         }
@@ -150,7 +161,7 @@ export class App implements OnInit, OnDestroy {
             msg.content += (response.content ?? '');
         } else if (response.type === 'done') {
             msg.done = true;
-            await this.persistMessage('bot', msg.content); // ✅ uses activeThreadId
+            await this.persistMessage('bot', msg.content);
         }
     }
 
@@ -172,12 +183,15 @@ export class App implements OnInit, OnDestroy {
 
         if (!this.hasRenamedThread) {
             const firstLine = text.split('\n')[0].slice(0, 60);
-            await this.chatStore.renameThread(this.activeThreadId, firstLine || 'Gesprek'); // ✅ active
+            await this.chatStore.renameThread(this.activeThreadId, firstLine || 'Gesprek');
             this.hasRenamedThread = true;
             await this.refreshThreads();
         }
 
-        this.chatSocketService.send(text);
+        this.chatSocketService.send({
+            id: this.activeThreadId,
+            userMessage: text
+        });
 
         this.userMessage = '';
     }

@@ -3,6 +3,11 @@ import {BehaviorSubject, defer, Observable, timer} from 'rxjs';
 import {map, retry, shareReplay} from 'rxjs/operators';
 import {webSocket, WebSocketSubject} from 'rxjs/webSocket';
 
+export type ChatRequest = {
+    id: string,
+    userMessage: string
+}
+
 export type WebSocketMessage =
     | { type: 'delta'; id: string; content?: string }
     | { type: 'done'; id: string }
@@ -61,8 +66,9 @@ export class ChatSocketService {
         });
     }
 
-    send(message: string): void {
-        this.socket$?.next(message);
+    send(chatRequest: ChatRequest): void {
+        const json = JSON.stringify(chatRequest);
+        this.socket$?.next(json);
     }
 
     close(): void {
